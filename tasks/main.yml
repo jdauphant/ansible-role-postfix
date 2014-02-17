@@ -1,0 +1,43 @@
+---
+ - name: ensure postfix is installed
+   apt:  pkg=postfix state=installed
+   when: ansible_os_family == 'Debian'
+   tags: [packages,postfix]
+
+ - name: create postfix configuration
+   template: src={{item}}.j2 dest={{postfix_conf_dir}}/{{item}} mode=0644 owner=root group=root
+   notify: restart postfix
+   with_items:
+     - main.cf
+     - master.cf
+   tags: [configuration,postfix]
+
+ - name: create sasl_password configuration
+   template: src=sasl_passwd.j2 dest={{postfix_conf_dir}}/sasl_passwd mode=0600 owner=root group=root
+   notify: reload postfix
+   register: postfix_sasl_passwd_result
+   when: postfix_sasl_passwd.0 is defined
+   tags: [configuration,postfix]
+
+ - name: ensure sasl_password is compiled
+   shell: postmap {{postfix_conf_dir}}/sasl_passwd
+   notify: reload postfix
+   when: postfix_sasl_passwd_result | changed
+   tags: [configuration,postfix]
+
+ - name: create tls_policy configuration
+   template: src=tls_policy.j2 dest={{postfix_conf_dir}}/tls_policy mode=0600 owner=root group=root
+   notify: reload postfix
+   register: postfix_tls_policy_result
+   when: postfix_tls_policy.0 is defined
+   tags: [configuration,postfix]
+
+ - name: ensure tls_policy is compiled
+   shell: postmap {{postfix_conf_dir}}/tls_policy
+   notify: reload postfix
+   when: postfix_tls_policy_result | changed
+   tags: [configuration,postfix]
+
+ - name: ensure postfix is running
+   service: name=postfix state=running enabled=yes
+   tags: [service,postfix]
