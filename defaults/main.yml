@@ -9,6 +9,7 @@ postfix_relay_server: ""
 postfix_inet_interfaces: loopback-only
 postfix_inet_protocols: all
 postfix_mydestination: "{{postfix_hostname}}, localhost"
+postfix_relay_domains: "{{postfix_mydestination}}, example.com"
 
 ## List of password for relay
 # postfix_sasl_passwd:
