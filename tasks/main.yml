@@ -1,6 +1,6 @@
 ---
  - name: ensure postfix is installed
-   apt:  pkg=postfix state=installed
+   apt:  pkg=postfix,mailutils state=installed
    when: ansible_os_family == 'Debian'
    tags: [packages,postfix]
 
